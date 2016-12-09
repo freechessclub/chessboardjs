@@ -186,6 +186,7 @@ function objToFen(obj) {
 }
 
 window['ChessBoard'] = window['ChessBoard'] || function(containerElOrId, cfg) {
+'use strict';
 
 cfg = cfg || {};
 
@@ -245,6 +246,7 @@ var ANIMATION_HAPPENING = false,
   DRAGGED_PIECE,
   DRAGGED_PIECE_LOCATION,
   DRAGGED_PIECE_SOURCE,
+  CLICK_MOVE = false,
   DRAGGING_A_PIECE = false,
   SPARE_PIECE_ELS_IDS = {},
   SQUARE_ELS_IDS = {},
@@ -772,10 +774,6 @@ function animateSparePieceToSquare(piece, dest, completeFn) {
 
 // execute an array of animations
 function doAnimations(a, oldPos, newPos) {
-  if (a.length === 0) {
-    return;
-  }
-
   ANIMATION_HAPPENING = true;
 
   var numFinished = 0;
@@ -974,7 +972,7 @@ function drawPositionInstant() {
   // add the pieces
   for (var i in CURRENT_POSITION) {
     if (CURRENT_POSITION.hasOwnProperty(i) !== true) continue;
-
+      if (DRAGGING_A_PIECE && DRAGGED_PIECE_SOURCE == i) continue;
     $('#' + SQUARE_ELS_IDS[i]).append(buildPiece(CURRENT_POSITION[i]));
   }
 }
@@ -1119,6 +1117,17 @@ function trashDraggedPiece() {
 }
 
 function dropDraggedPieceOnSquare(square) {
+
+  // if destination is same as source, piece stays picked up and is dropped at the next clicked square.
+  if (CLICK_MOVE == false) {
+    if (square === DRAGGED_PIECE_SOURCE) {
+      CLICK_MOVE = true;
+      return;
+    }
+  }
+
+  CLICK_MOVE = false;
+
   removeSquareHighlights();
 
   // update position
@@ -1244,10 +1253,6 @@ function stopDraggedPiece(location) {
     typeof cfg.onDrop === 'function') {
     var newPosition = deepCopy(CURRENT_POSITION);
 
-    // source piece is a spare piece and position is off the board
-    //if (DRAGGED_PIECE_SOURCE === 'spare' && location === 'offboard') {...}
-    // position has not changed; do nothing
-
     // source piece is a spare piece and position is on the board
     if (DRAGGED_PIECE_SOURCE === 'spare' && validSquare(location) === true) {
       // add the piece to the board
@@ -1263,6 +1268,16 @@ function stopDraggedPiece(location) {
     // source piece was on the board and position is on the board
     if (validSquare(DRAGGED_PIECE_SOURCE) === true &&
       validSquare(location) === true) {
+      if (DRAGGED_PIECE_SOURCE === location) {
+        if (CLICK_MOVE == false) {
+          // pick up spare piece and put it down on next clicked square
+          CLICK_MOVE = true;
+          return;
+        } else {
+          CLICK_MOVE = false;
+        }
+      }
+
       // move the piece
       delete newPosition[DRAGGED_PIECE_SOURCE];
       newPosition[location] = DRAGGED_PIECE;
@@ -1324,7 +1339,6 @@ widget.highlight = function() {
 
 };
 */
-
 // move pieces
 widget.move = function() {
   // no need to throw an error here; just do nothing
@@ -1458,6 +1472,12 @@ widget.resize = function() {
 widget.start = function(useAnimation) {
   widget.position('start', useAnimation);
 };
+
+// turn notation on or off
+widget.showNotation = function(show) {
+  cfg.showNotation = show;
+  drawBoard();
+}
 
 //------------------------------------------------------------------------------
 // Browser Events
