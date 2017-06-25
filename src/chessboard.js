@@ -1805,7 +1805,6 @@
     return widget
   } // end constructor
 
-  // TODO: do module exports here
   window['Chessboard'] = constructor
 
   // support legacy ChessBoard name
@@ -1815,3 +1814,6 @@
   window['Chessboard']['fenToObj'] = fenToObj
   window['Chessboard']['objToFen'] = objToFen
 })() // end anonymous wrapper
+
+module.exports = window['Chessboard'];
+
