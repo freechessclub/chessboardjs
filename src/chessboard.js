@@ -675,6 +675,7 @@
     var draggedPiece = null
     var draggedPieceLocation = null
     var draggedPieceSource = null
+    var isClicked = false
     var isDragging = false
     var sparePiecesElsIds = {}
     var squareElsIds = {}
@@ -1114,6 +1115,7 @@
       // add the pieces
       for (var i in currentPosition) {
         if (!currentPosition.hasOwnProperty(i)) continue
+        if (isDragging && draggedPieceSource == i) continue
 
         $('#' + squareElsIds[i]).append(buildPieceHTML(currentPosition[i]))
       }
@@ -1243,6 +1245,15 @@
     }
 
     function dropDraggedPieceOnSquare (square) {
+      // if destination is same as source, piece stays picked up and is dropped at the next clicked square.
+      if (isClicked == false) {
+        if (square === draggedPieceSource) {
+          isClicked = true;
+          return
+        }
+      }
+      isClicked = false;
+
       removeSquareHighlights()
 
       // update position
@@ -1387,6 +1398,16 @@
 
         // source piece was on the board and position is on the board
         if (validSquare(draggedPieceSource) && validSquare(location)) {
+          if (draggedPieceSource === location) {
+            if (isClicked == false) {
+              // pick up spare piece and put it down on next clicked square
+              isClicked = true
+              return
+            } else {
+              isClicked = false
+            }
+          }
+
           // move the piece
           delete newPosition[draggedPieceSource]
           newPosition[location] = draggedPiece
