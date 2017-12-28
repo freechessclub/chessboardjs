@@ -998,7 +998,9 @@
         numFinished = numFinished + 1
         if (numFinished !== animations.length) return
 
-        drawPositionInstant()
+	if (JSON.stringify(newPos) === JSON.stringify(currentPosition)) {
+          drawPositionInstant()
+        }
 
         // run their onMoveEnd function
         if (isFunction(config.onMoveEnd)) {
@@ -1561,10 +1563,10 @@
       if (useAnimation) {
         // start the animations
         var animations = calculateAnimations(currentPosition, position)
-        doAnimations(animations, currentPosition, position)
-
         // set the new position
         setCurrentPosition(position)
+
+        doAnimations(animations, currentPosition, position)
       } else {
         // instant update
         setCurrentPosition(position)
