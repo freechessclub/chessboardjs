@@ -9,7 +9,7 @@
   },
   "main": "src/chessboard.js",
   "dependencies": {
-    "jquery": "^3.2.1"
+    "jquery": "^3.5.1"
   },
   "devDependencies": {
     "kidif": "1.1.0",
